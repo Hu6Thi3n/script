@@ -1,0 +1,245 @@
+local WebserverSettings = {
+    Port = '2024',
+}
+local Request = (syn and syn.request) or request or (http and http.request) or http_request
+local HttpService = game:GetService("HttpService")
+
+-- Chức năng gỡ lỗi
+local function debugLog(message)
+end
+
+-- Hàm gửi tin nhắn đến máy chủ
+local function sendMessageToServer(dataArray)
+    local Url = 'http://103.110.33.164:' .. WebserverSettings.Port .. '/sendMessage'
+    debugLog("Constructed URL: " .. Url)
+
+    if WebserverSettings.Password and #WebserverSettings.Password >= 6 then
+        Url = Url .. '?Password=' .. WebserverSettings.Password
+        debugLog("Password added to the URL.")
+    end
+
+    local jsonData = HttpService:JSONEncode(dataArray)  -- Convert Lua table to JSON
+
+    local Response = Request {
+        Method = 'POST',
+        Url = Url,
+        Headers = {
+            ['Content-Type'] = 'application/json',  -- Set the content type to JSON
+        },
+        Body = jsonData,  -- Send the JSON data
+    }
+
+    debugLog("Server Response Status: " .. Response.StatusCode)
+    if Response.StatusCode ~= 200 then 
+        debugLog("Failed to send the message. Server responded with: " .. Response.Body)
+        return false 
+    end
+
+    debugLog("Message sent successfully!")
+    return Response.Body
+end
+
+repeat wait() until game:IsLoaded()
+
+getgenv().ChooseTeam = "Pirate"
+
+repeat wait() until game.Players.LocalPlayer and game:IsLoaded()
+
+repeat wait() until game.Players.LocalPlayer.Character
+
+repeat wait() until game:GetService("Players").LocalPlayer:FindFirstChild("DataLoaded")
+
+repeat wait() until game.Players.LocalPlayer:FindFirstChild("PlayerGui")
+
+repeat wait()
+
+    if game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("Main"):FindFirstChild("ChooseTeam") then
+        local v99 = game:GetService("Players").LocalPlayer.PlayerGui.Main.ChooseTeam
+        local v52 = v99.Container.Pirates.Frame.TextButton
+        local v123 = v99.Container.Marines.Frame.TextButton
+
+        if string.find(getgenv().ChooseTeam, "Pirate") then
+            for _, connection in pairs(getconnections(v52.Activated)) do
+                connection.Function()
+            end
+        elseif string.find(getgenv().ChooseTeam, "Marine") then
+            for _, connection in pairs(getconnections(v123.Activated)) do
+                connection.Function()
+            end
+        else
+            for _, connection in pairs(getconnections(v52.Activated)) do
+                connection.Function()
+            end
+        end
+    end
+
+until game.Players.LocalPlayer.Team ~= nil and game:IsLoaded()
+local function k123()
+    local v113 = game.ReplicatedStorage.Remotes.CommF_:InvokeServer("Wenlocktoad", "1")
+    local v111 = game.ReplicatedStorage.Remotes.CommF_:InvokeServer("Alchemist", "1")
+
+    if game.Players.LocalPlayer.Character:FindFirstChild("RaceTransformed") then
+        return game.Players.LocalPlayer.Data.Race.Value .. "-V4"
+    end
+    if v113 == -2 then
+        return game.Players.LocalPlayer.Data.Race.Value .. "-V3"
+    end
+    if v111 == -2 then
+        return game.Players.LocalPlayer.Data.Race.Value .. "-V2"
+    end
+    return game.Players.LocalPlayer.Data.Race.Value .. " V1"
+end
+local function k34()
+    local v99 = {}
+    local v100 = game.ReplicatedStorage.Remotes.CommF_:InvokeServer("getAwakenedAbilities")
+    if v100 then
+        for _, k90 in pairs(v100) do
+		wait()
+            if k90.Awakened then
+                table.insert(v99, k90.Key)
+            end
+        end
+    end
+    return table.concat(v99, ", ")
+end
+local function j99()
+    local v231 = {"Superhuman", "ElectricClaw", "DragonTalon", "SharkmanKarate", "DeathStep", "Godhuman"}
+    local k98 = ""
+
+    for _, v11 in pairs(v231) do
+        if game.ReplicatedStorage.Remotes.CommF_:InvokeServer("Buy" .. v11, true) == 1 then
+            k98 = k98 .. v11 ..", "
+        end
+    end
+
+    return k98
+end
+function v908(k111)
+local a = ""
+local ddd = game.ReplicatedStorage.Remotes.CommF_
+local tuoi = ddd:InvokeServer("getInventory")
+if tuoi then
+    for _, v in pairs(tuoi) do
+        if v.Rarity >= 3 and v.Type == k111 then
+            a = a .. v.Name .. ", "
+        end
+    end
+end
+return a
+end
+function v999()
+    local a = ""
+    local ddd = game.ReplicatedStorage.Remotes.CommF_
+    local tuoi = ddd:InvokeServer("getInventory")
+    if tuoi then
+        for _, v in pairs(tuoi) do
+            if v.Rarity >= 2 and v.Type == "Material" then
+                if a ~= "" then
+                    a = a .. ", "
+                end
+                a = a .. v.Name .. ": " .. v.Count
+            end
+        end
+    end
+    return a
+end
+
+function CheckTrainSS()
+    local InvokeServer_ret1_9, InvokeServer_ret2_9 = game.ReplicatedStorage.Remotes.CommF_:InvokeServer("UpgradeRace", "Check");
+    if InvokeServer_ret1_9 == 8 then
+        return tostring(10 - InvokeServer_ret2_9)
+    else
+        return "0"
+    end
+end
+
+function CheckPullLever()
+    return game.ReplicatedStorage.Remotes.CommF_:InvokeServer("CheckTempleDoor") and "yes" or "no"
+end
+
+function CheckGears2()
+    local gay = 0
+    for i,v in pairs(game.Players.LocalPlayer.Data.Race:GetChildren()) do
+        pcall(function()
+            if v.Value > gay then
+                gay = v.Value
+            end
+        end)
+    end
+    return tostring(gay)
+end
+
+function CheckGear()
+	if not game.Players.LocalPlayer.Character:FindFirstChild("RaceTransformed") then
+		return "No Gear"
+	end
+	local InvokeServer_ret1_9, InvokeServer_ret2_9, InvokeServer_ret3_3 = game.ReplicatedStorage.Remotes.CommF_:InvokeServer("UpgradeRace", "Check");
+	local gay = {
+		"Required Train More",
+		InvokeServer_ret3_3 and "Can Buy Gear With " .. InvokeServer_ret3_3 .. " Fragments" or "gay",
+		"Required Train More",
+		InvokeServer_ret3_3 and "Can Buy Gear With " .. InvokeServer_ret3_3 .. " Fragments" or "gay",
+		"Full Gear, Full 5 Training Seassions (Full Update)",
+		InvokeServer_ret2_9 and "Gear 3, Upgrade completed: " .. InvokeServer_ret2_9 - 2 .. "/3, Need Trains More" or "gay",
+		InvokeServer_ret3_3 and "Can Buy Gear With " .. InvokeServer_ret3_3 .. " Fragments" or "gay",
+		InvokeServer_ret2_9 and "Full Gear, Remaining: " .. 10 - InvokeServer_ret2_9 .. "/3, Training Seassions" or "gay",
+	}
+	if gay[InvokeServer_ret1_9] then
+		return gay[InvokeServer_ret1_9]
+	else
+		if InvokeServer_ret1_9 == 0 then
+			return "Ready For Trial"
+		else
+			return "No Gear"
+		end
+	end
+	return gay[8]
+end
+
+function tuoiiiii()
+    local data = {}
+    local LocalPlayer = game.Players.LocalPlayer
+
+    data["Player Name"] = LocalPlayer.Name
+    data["Level"] = tostring(LocalPlayer.Data.Level.Value):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    data["Beli"] = tostring(LocalPlayer.Data.Beli.Value):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    data["Frag"] = tostring(LocalPlayer.Data.Fragments.Value):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    data["Devil FRUIT"] = tostring(LocalPlayer.Data.DevilFruit.Value)
+    data["Bounty/Honor"] = tostring(LocalPlayer.leaderstats["Bounty/Honor"].Value):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+    data["Race"] = k123()
+    data["Awakened Skills"] = k34()
+    data["Melee(s)"] = j99()
+    data["Sword(s)"] = v908("Sword")
+    data["Gun(s)"] = v908("Gun")
+    data["Accessory(s)"] = v908("Wear")
+    data["Fruit(s)"] = v908("Blox Fruit")
+    data["Materials(s)"] = v999()
+    data["TrainSS"] = CheckTrainSS()
+    data["PullLever"] = CheckPullLever()
+    data["Trial"] = CheckGear()
+    local placeId = game.PlaceId
+    if placeId == 2753915549 then
+        data["Sea"] = "Sea 1"
+    elseif placeId == 4442272183 then
+        data["Sea"] = "Sea 2"
+    elseif placeId == 7449423635 then
+        data["Sea"] = "Sea 3"
+    else
+        data["Sea"] = "Unknown"
+    end
+    -- New fields using getgenv()
+    data["Key"] = getgenv().Key or ""
+    data["Note"] = getgenv().Note or ""
+
+    return data
+end
+while true do
+	local LocalPlayer = game.Players.LocalPlayer
+	local playerData = {
+	    Username = LocalPlayer.Name,
+	    PlayerInfo = tuoiiiii()  -- hoặc dữ liệu khác bạn muốn gửi
+	}
+	debugLog("Sending player data to the server.")
+	sendMessageToServer(playerData)
+    wait(15)
+end
